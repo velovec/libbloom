@@ -24,10 +24,10 @@ struct bloom
   // These fields are part of the public interface of this structure.
   // Client code may read these values if desired. Client code MUST NOT
   // modify any of these.
-  int entries;
+  long long entries;
   double error;
-  int bits;
-  int bytes;
+  long long  bits;
+  long long bytes;
   int hashes;
 
   // Fields below are private to the implementation. These may go away or
@@ -66,14 +66,14 @@ struct bloom
  *     1 - on failure
  *
  */
-int bloom_init(struct bloom * bloom, int entries, double error);
+int bloom_init(struct bloom * bloom, long long entries, double error);
 
 
 /** ***************************************************************************
  * Deprecated, use bloom_init()
  *
  */
-int bloom_init_size(struct bloom * bloom, int entries, double error,
+int bloom_init_size(struct bloom * bloom, long long entries, double error,
                     unsigned int cache_size);
 
 
@@ -165,6 +165,10 @@ int bloom_reset(struct bloom * bloom);
  *
  */
 const char * bloom_version();
+
+int bloom_load(struct bloom * bloom, const char * filename);
+
+int bloom_dump(struct bloom * bloom, const char * filename);
 
 #ifdef __cplusplus
 }

@@ -77,14 +77,14 @@ static int bloom_check_add(struct bloom * bloom,
 }
 
 
-int bloom_init_size(struct bloom * bloom, int entries, double error,
+int bloom_init_size(struct bloom * bloom, long long entries, double error,
                     unsigned int cache_size)
 {
   return bloom_init(bloom, entries, error);
 }
 
 
-int bloom_init(struct bloom * bloom, int entries, double error)
+int bloom_init(struct bloom * bloom, long long entries, double error)
 {
   bloom->ready = 0;
 
@@ -100,7 +100,7 @@ int bloom_init(struct bloom * bloom, int entries, double error)
   bloom->bpe = -(num / denom);
 
   double dentries = (double)entries;
-  bloom->bits = (int)(dentries * bloom->bpe);
+  bloom->bits = (long long)(dentries * bloom->bpe);
 
   if (bloom->bits % 8) {
     bloom->bytes = (bloom->bits / 8) + 1;
@@ -135,11 +135,11 @@ int bloom_add(struct bloom * bloom, const void * buffer, int len)
 void bloom_print(struct bloom * bloom)
 {
   printf("bloom at %p\n", (void *)bloom);
-  printf(" ->entries = %d\n", bloom->entries);
+  printf(" ->entries = %lld\n", bloom->entries);
   printf(" ->error = %f\n", bloom->error);
-  printf(" ->bits = %d\n", bloom->bits);
+  printf(" ->bits = %lld\n", bloom->bits);
   printf(" ->bits per elem = %f\n", bloom->bpe);
-  printf(" ->bytes = %d\n", bloom->bytes);
+  printf(" ->bytes = %lld\n", bloom->bytes);
   printf(" ->hash functions = %d\n", bloom->hashes);
 }
 
@@ -160,6 +160,25 @@ int bloom_reset(struct bloom * bloom)
   return 0;
 }
 
+int bloom_load(struct bloom * bloom, const char * filename) {
+    FILE *fp = fopen(filename, "rb");
+
+    if (fp) {
+        size_t r1 = fread(bloom->bf, sizeof bloom->bf[0], bloom->bytes, fp);
+        printf("read %zu elements out of %lld requested\n", r1, bloom->bytes);
+        fclose(fp);
+    }
+}
+
+int bloom_dump(struct bloom * bloom, const char * filename) {
+    FILE *fp = fopen(filename, "wb");
+
+    if (fp) {
+        size_t r1 = fwrite(bloom->bf, sizeof bloom->bf[0], bloom->bytes, fp);
+        printf("wrote %zu elements out of %lld requested\n", r1, bloom->bytes);
+        fclose(fp);
+    }
+}
 
 const char * bloom_version()
 {
